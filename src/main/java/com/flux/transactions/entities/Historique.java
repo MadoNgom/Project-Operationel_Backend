@@ -7,19 +7,19 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-public class Notification {
+public class Historique {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String message;
+    private String typeOperation; // Ex : "envoi", "réception", "dépôt", "retrait"
 
-    private boolean lue;
+    private Double montant;
 
-    private LocalDateTime dateEnvoi;
+    private LocalDateTime dateOperation;
 
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id")
-    private Utilisateur utilisateur;
+    @JoinColumn(name = "compte_id")
+    private Compte compte;
 }

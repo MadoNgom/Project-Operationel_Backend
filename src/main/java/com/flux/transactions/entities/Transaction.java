@@ -1,52 +1,33 @@
 package com.flux.transactions.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.flux.transactions.enums.TypeTransaction;
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "transactions")
+@Data
 public class Transaction {
 
     @Id
-    @GeneratedValue
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false)
     private Double montant;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
+    private LocalDateTime dateTransaction;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TransactionTypes type;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private TypeTransaction typeTransaction;
 
     @ManyToOne
-    @JoinColumn(name = "expediteur_id", referencedColumnName = "id", nullable = false)
-    private Utilisateur expediteur;
-
-    @Column(name = "expediteur_id", insertable = false, updatable = false)
-    private Integer expediteurId; // Changement ici: Integer
+    @JoinColumn(name = "compte_expediteur_id")
+    private Compte expediteur;
 
     @ManyToOne
-    @JoinColumn(name = "destinataire_id", referencedColumnName = "id", nullable = false)
-    private Utilisateur destinataire;
-
-    @Column(name = "destinataire_id", insertable = false, updatable = false)
-    private Integer destinataireId; // Changement ici: Integer
-
-    // --- JPA Lifecycle Callbacks ---
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @JoinColumn(name = "compte_destinataire_id")
+    private Compte destinataire;
 }
