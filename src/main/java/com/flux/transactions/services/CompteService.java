@@ -1,12 +1,12 @@
 package com.flux.transactions.services;
 
 import com.flux.transactions.entities.Compte;
-
-import java.util.List;
+import com.flux.transactions.entities.Utilisateur;
 
 public interface CompteService {
-    Compte createCompte(Compte compte);
-    Compte getCompteById(Long id);
-    List<Compte> getAllComptes();
-    void deleteCompte(Long id);
+    Compte createCompteForUtilisateur(Utilisateur utilisateur);
+    Compte getCompteByNumero(String numeroCompte);
+    Compte getCompteByUtilisateurId(Long utilisateurId);
+    void updateSolde(Long compteId, Double nouveauSolde);
+    boolean isCompteActif(Long compteId);
 }

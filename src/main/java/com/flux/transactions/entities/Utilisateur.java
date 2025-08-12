@@ -23,6 +23,7 @@ public class Utilisateur {
     private String email;
     private String telephone;
     private String adresse;
+    private String password;
 
     @OneToOne(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

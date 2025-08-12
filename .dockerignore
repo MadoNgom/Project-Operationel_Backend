@@ -1,0 +1,57 @@
+# Fichiers et dossiers à ignorer lors du build Docker
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Scripts de déploiement
+deploy.sh
+setup-database.sh
+env.production
+
+# Configuration Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Configuration IDE
+.vscode
+.idea
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Tests
+src/test/
+target/test-classes/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Maven
+target/
+!target/*.jar
+
+# Node.js (si présent)
+node_modules/
+npm-debug.log*
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Certificats SSL
+*.pem
+*.key
+*.crt
+ssl/
+nginx/ssl/
