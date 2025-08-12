@@ -3,7 +3,6 @@ package com.flux.transactions.services;
 import com.flux.transactions.dtos.AuthRequest;
 import com.flux.transactions.dtos.AuthResponse;
 import com.flux.transactions.dtos.RegisterRequest;
-import com.flux.transactions.dtos.RegisterResponse;
 import com.flux.transactions.entities.Utilisateur;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

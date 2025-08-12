@@ -1,5 +1,8 @@
 package com.flux.transactions.services;
 
+import com.flux.transactions.dtos.CompteDto;
+import com.flux.transactions.dtos.UtilisateurProfileDto;
+import com.flux.transactions.entities.Compte;
 import com.flux.transactions.entities.Utilisateur;
 // import com.flux.transactions.exceptions.DuplicateResourceException;
 import com.flux.transactions.repositories.UtilisateurRepository;
@@ -67,5 +70,42 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Override
     public boolean existsByEmail(String email) {
         return utilisateurRepository.findByEmail(email).isPresent();
+    }
+
+    /**
+     * Récupère le profil complet d'un utilisateur par son email
+     * @param email L'email de l'utilisateur
+     * @return Le DTO du profil utilisateur avec les informations du compte
+     */
+    @Override
+    public UtilisateurProfileDto getUtilisateurProfileByEmail(String email) {
+        Utilisateur utilisateur = getUtilisateurByEmail(email);
+        if (utilisateur == null) {
+            return null;
+        }
+
+        // Créer le DTO du compte
+        CompteDto compteDto = null;
+        if (utilisateur.getCompte() != null) {
+            Compte compte = utilisateur.getCompte();
+            compteDto = new CompteDto(
+                    compte.getId(),
+                    compte.getNumeroCompte(),
+                    compte.getSolde(),
+                    compte.getDevis(),
+                    compte.getActif()
+            );
+        }
+
+        // Créer et retourner le DTO du profil utilisateur
+        return new UtilisateurProfileDto(
+                utilisateur.getId(),
+                utilisateur.getNom(),
+                utilisateur.getPrenom(),
+                utilisateur.getEmail(),
+                utilisateur.getTelephone(),
+                utilisateur.getAdresse(),
+                compteDto
+        );
     }
 }
