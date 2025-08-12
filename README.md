@@ -98,7 +98,7 @@ Content-Type: application/json
 - `GET /swagger-ui/**` - Interface Swagger
 
 #### 🔒 Protégés (avec authentification JWT)
-- `GET /api/utilisateurs/me` - Profil utilisateur connecté
+- `GET /api/utilisateurs/me` - Profil utilisateur connecté avec informations du compte
 - `GET /api/utilisateurs/{id}` - Détails d'un utilisateur
 - `GET /api/utilisateurs` - Liste des utilisateurs
 - `POST /api/utilisateurs` - Créer un utilisateur
@@ -195,13 +195,37 @@ curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password123"}'
 
-# 3. Utilisation du token pour accéder au profil
+# 3. Utilisation du token pour accéder au profil (avec informations du compte)
 curl -X GET http://localhost:8080/api/utilisateurs/me \
   -H "Authorization: Bearer <votre_token>"
 
 # 4. Consulter le compte créé
 curl -X GET http://localhost:8080/api/comptes/me \
   -H "Authorization: Bearer <votre_token>"
+```
+
+**Exemple de réponse pour `/api/utilisateurs/me` :**
+```json
+{
+    "data": {
+        "id": 1,
+        "nom": "Test",
+        "prenom": "User",
+        "email": "test@example.com",
+        "telephone": "+1234567890",
+        "adresse": "123 Test St",
+        "compte": {
+            "id": 1,
+            "numeroCompte": "1234",
+            "solde": 0.0,
+            "devis": "CFA",
+            "actif": true
+        }
+    },
+    "isSuccess": true,
+    "message": "Profil récupéré avec succès",
+    "timestamp": 1703123456789
+}
 ```
 
 ## 🚨 Gestion des erreurs

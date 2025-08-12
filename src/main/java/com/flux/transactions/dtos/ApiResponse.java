@@ -12,25 +12,28 @@ public class ApiResponse<T> {
     private boolean isSuccess;
     private String message;
     private long timestamp;
-    private String status;
 
-    // Constructeur pour succès
+    public ApiResponse(T data, boolean isSuccess, String message) {
+        this.data = data;
+        this.isSuccess = isSuccess;
+        this.message = message;
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    // Méthodes statiques pour faciliter la création
     public static <T> ApiResponse<T> success(T data, String message) {
-        return new ApiResponse<>(data, true, message, System.currentTimeMillis(), "SUCCESS");
+        return new ApiResponse<>(data, true, message);
     }
 
-    // Constructeur pour succès sans message
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(data, true, "Opération réussie", System.currentTimeMillis(), "SUCCESS");
+        return new ApiResponse<>(data, true, "Opération réussie");
     }
 
-    // Constructeur pour erreur
     public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(null, false, message, System.currentTimeMillis(), "ERROR");
+        return new ApiResponse<>(null, false, message);
     }
 
-    // Constructeur pour erreur avec données
     public static <T> ApiResponse<T> error(T data, String message) {
-        return new ApiResponse<>(data, false, message, System.currentTimeMillis(), "ERROR");
+        return new ApiResponse<>(data, false, message);
     }
 }

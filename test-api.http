@@ -1,0 +1,50 @@
+### Test de l'API Transactions
+
+# 1. Test de l'endpoint public
+GET http://localhost:8080/api/test/public
+
+###
+
+# 2. Inscription d'un utilisateur
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "nom": "Test",
+    "prenom": "User",
+    "email": "test@example.com",
+    "telephone": "+1234567890",
+    "adresse": "123 Test St",
+    "password": "password123"
+}
+
+###
+
+# 3. Connexion
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+###
+
+# 4. Test de l'endpoint protégé (remplacez TOKEN par le token reçu)
+GET http://localhost:8080/api/test/protected
+Authorization: Bearer TOKEN
+
+###
+
+# 5. Récupération du profil utilisateur (avec informations du compte)
+GET http://localhost:8080/api/utilisateurs/me
+Authorization: Bearer TOKEN
+
+###
+
+# 6. Récupération du compte utilisateur
+GET http://localhost:8080/api/comptes/me
+Authorization: Bearer TOKEN
+
+###
