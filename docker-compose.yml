@@ -1,79 +1,50 @@
 version: '3.8'
 
 services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: transactions-api
+  postgres:
+    image: postgres:15-alpine
+    container_name: transactions-postgres
     restart: unless-stopped
+    environment:
+      - POSTGRES_DB=flux-transaction-v1
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d flux-transaction-v1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Spring Boot
+  app:
+    build: .
+    container_name: spring_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/flux-transaction-v1
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin_password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
     ports:
       - "8080:8080"
-    environment:
-      # Configuration de la base de données PostgreSQL (externe)
-      - SPRING_DATASOURCE_URL=${DATABASE_URL:jdbc:postgresql://your-vps-ip:5432/flux-transaction-v1}
-      - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME:admin}
-      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD:admin_password}
-
-      # Configuration JWT
-      - JWT_SECRET=${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-      - JWT_EXPIRATION=${JWT_EXPIRATION:86400000}
-
-      # Configuration de l'application
-      - SPRING_PROFILES_ACTIVE=prod
-      - SERVER_PORT=8080
-
-      # Configuration de la JVM
-      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC -XX:+UseContainerSupport
-
-      # Configuration de la base de données
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
-      - SPRING_JPA_SHOW_SQL=false
-
-      # Configuration Swagger
-      - SPRINGDOC_API_DOCS_ENABLED=true
-      - SPRINGDOC_SWAGGER_UI_ENABLED=true
-
-      # Configuration Actuator
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
-      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=when_authorized
-
     networks:
-      - api-network
-
-    # Configuration des ressources
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '0.5'
-        reservations:
-          memory: 512M
-          cpus: '0.25'
-
-    # Health check
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
-    # Logs
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - app-network
 
 networks:
-  api-network:
+  app-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
 volumes:
-  app-logs:
+  postgres_data:
     driver: local
