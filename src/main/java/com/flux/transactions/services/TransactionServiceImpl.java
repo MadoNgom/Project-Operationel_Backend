@@ -3,8 +3,12 @@ package com.flux.transactions.services;
 import com.flux.transactions.entities.Compte;
 import com.flux.transactions.entities.Transaction;
 import com.flux.transactions.enums.TypeTransaction;
+import com.flux.transactions.exceptions.AccountInactiveException;
+import com.flux.transactions.exceptions.InsufficientFundsException;
+import com.flux.transactions.exceptions.ResourceNotFoundException;
 import com.flux.transactions.repositories.CompteRepository;
 import com.flux.transactions.repositories.TransactionRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,14 +17,21 @@ import java.util.List;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    private static final Long ADMIN_COMPTE_ID = 1000L;
-
     private final TransactionRepository transactionRepository;
     private final CompteRepository compteRepository;
 
-    public TransactionServiceImpl(TransactionRepository transactionRepository, CompteRepository compteRepository) {
+    /**
+     * ID du compte "admin" depuis lequel on fait les dépôts/retraits.
+     * Peut être surchargé depuis application.properties avec : transaction.admin.compte.id=1000
+     */
+    private final Long adminCompteId;
+
+    public TransactionServiceImpl(TransactionRepository transactionRepository,
+                                  CompteRepository compteRepository,
+                                  @Value("${transaction.admin.compte.id:1000}") Long adminCompteId) {
         this.transactionRepository = transactionRepository;
         this.compteRepository = compteRepository;
+        this.adminCompteId = adminCompteId;
     }
 
     @Override
@@ -33,70 +44,91 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         switch (type) {
-            case DEPOT -> handleDepot(transaction);
-            case RETRAIT -> handleRetrait(transaction);
-            case TRANSFERT -> handleTransfert(transaction);
+            case DEPOT -> processDepot(transaction);
+            case RETRAIT -> processRetrait(transaction);
+            case TRANSFERT -> processTransfert(transaction);
+            default -> throw new IllegalArgumentException("Type de transaction non supporté : " + type);
         }
 
         return transactionRepository.save(transaction);
     }
 
-    private void handleDepot(Transaction transaction) {
-        Compte admin = getCompteById(ADMIN_COMPTE_ID, "admin");
-        Compte destinataire = getCompteById(transaction.getDestinataire().getId(), "destinataire");
+    private void processDepot(Transaction transaction) {
+        Compte admin = fetchCompte(adminCompteId, "admin");
+        Compte destinataire = fetchCompteFromTransaction(transaction.getDestinataire(), "destinataire");
 
-        if (!destinataire.getActif()) throw new RuntimeException("Compte destinataire désactivé.");
+        ensureCompteActif(destinataire, "destinataire");
+        ensureSufficientFunds(admin, transaction.getMontant(), "admin");
 
-        if (admin.getSolde() < transaction.getMontant()) {
-            throw new RuntimeException("Solde insuffisant dans le compte admin.");
-        }
-
-        admin.setSolde(admin.getSolde() - transaction.getMontant());
-        destinataire.setSolde(destinataire.getSolde() + transaction.getMontant());
+        debit(admin, transaction.getMontant());
+        credit(destinataire, transaction.getMontant());
 
         compteRepository.save(admin);
         compteRepository.save(destinataire);
     }
 
-    private void handleRetrait(Transaction transaction) {
-        Compte admin = getCompteById(ADMIN_COMPTE_ID, "admin");
-        Compte expediteur = getCompteById(transaction.getExpediteur().getId(), "expediteur");
+    private void processRetrait(Transaction transaction) {
+        Compte admin = fetchCompte(adminCompteId, "admin");
+        Compte expediteur = fetchCompteFromTransaction(transaction.getExpediteur(), "expediteur");
 
-        if (!expediteur.getActif()) throw new RuntimeException("Compte expediteur désactivé.");
+        ensureCompteActif(expediteur, "expediteur");
+        ensureSufficientFunds(expediteur, transaction.getMontant(), "expediteur");
 
-        if (expediteur.getSolde() < transaction.getMontant()) {
-            throw new RuntimeException("Solde insuffisant pour le retrait.");
-        }
-
-        expediteur.setSolde(expediteur.getSolde() - transaction.getMontant());
-        admin.setSolde(admin.getSolde() + transaction.getMontant());
+        debit(expediteur, transaction.getMontant());
+        credit(admin, transaction.getMontant());
 
         compteRepository.save(expediteur);
         compteRepository.save(admin);
     }
 
-    private void handleTransfert(Transaction transaction) {
-        Compte expediteur = getCompteById(transaction.getExpediteur().getId(), "expediteur");
-        Compte destinataire = getCompteById(transaction.getDestinataire().getId(), "destinataire");
+    private void processTransfert(Transaction transaction) {
+        Compte expediteur = fetchCompteFromTransaction(transaction.getExpediteur(), "expediteur");
+        Compte destinataire = fetchCompteFromTransaction(transaction.getDestinataire(), "destinataire");
 
-        if (!expediteur.getActif() || !destinataire.getActif()) {
-            throw new RuntimeException("Un des comptes est désactivé.");
-        }
+        ensureCompteActif(expediteur, "expediteur");
+        ensureCompteActif(destinataire, "destinataire");
+        ensureSufficientFunds(expediteur, transaction.getMontant(), "expediteur");
 
-        if (expediteur.getSolde() < transaction.getMontant()) {
-            throw new RuntimeException("Solde insuffisant pour le transfert.");
-        }
-
-        expediteur.setSolde(expediteur.getSolde() - transaction.getMontant());
-        destinataire.setSolde(destinataire.getSolde() + transaction.getMontant());
+        debit(expediteur, transaction.getMontant());
+        credit(destinataire, transaction.getMontant());
 
         compteRepository.save(expediteur);
         compteRepository.save(destinataire);
     }
 
-    private Compte getCompteById(Long id, String role) {
+    private Compte fetchCompte(Long id, String role) {
         return compteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Compte " + role + " introuvable (ID: " + id + ")"));
+                .orElseThrow(() -> new ResourceNotFoundException("Compte " + role + " introuvable (ID: " + id + ")"));
+    }
+
+    private Compte fetchCompteFromTransaction(Compte compteRef, String role) {
+        if (compteRef == null || compteRef.getId() == null) {
+            throw new IllegalArgumentException("ID du compte " + role + " est requis.");
+        }
+        return fetchCompte(compteRef.getId(), role);
+    }
+
+    private void ensureCompteActif(Compte compte, String role) {
+        if (Boolean.FALSE.equals(compte.getActif())) {
+            throw new AccountInactiveException("Compte " + role + " désactivé (ID: " + compte.getId() + ").");
+        }
+    }
+
+    private void ensureSufficientFunds(Compte compte, Double montant, String role) {
+        if (montant == null || montant <= 0) {
+            throw new IllegalArgumentException("Montant invalide pour la transaction.");
+        }
+        if (compte.getSolde() < montant) {
+            throw new InsufficientFundsException("Solde insuffisant sur le compte " + role + " (ID: " + compte.getId() + ").");
+        }
+    }
+
+    private void debit(Compte compte, Double montant) {
+        compte.setSolde(compte.getSolde() - montant);
+    }
+
+    private void credit(Compte compte, Double montant) {
+        compte.setSolde(compte.getSolde() + montant);
     }
 
     @Override
@@ -114,5 +146,4 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.deleteById(id);
     }
 }
-
 

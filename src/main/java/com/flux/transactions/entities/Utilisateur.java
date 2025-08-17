@@ -1,17 +1,12 @@
 package com.flux.transactions.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter
+@Setter
 public class Utilisateur {
 
     @Id
@@ -21,10 +16,12 @@ public class Utilisateur {
     private String nom;
     private String prenom;
     private String email;
+
+    @Column(unique = true) // contrainte unique
     private String telephone;
+
     private String adresse;
 
-    @OneToOne(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "utilisateur")
     private Compte compte;
 }
