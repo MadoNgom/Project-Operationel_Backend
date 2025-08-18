@@ -2,7 +2,6 @@ package com.flux.transactions.controllers;
 
 import com.flux.transactions.dtos.UtilisateurDto;
 import com.flux.transactions.dtos.ApiResponse;
-import com.flux.transactions.dtos.UtilisateurMeResponse;
 import com.flux.transactions.entities.Utilisateur;
 import com.flux.transactions.services.UtilisateurService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -79,37 +78,14 @@ public class UtilisateurController {
     // }
 
     @GetMapping("/me")
-    @Operation(summary = "Récupérer le profil de l'utilisateur connecté", description = "Retourne les informations de l'utilisateur authentifié avec son compte bancaire")
-    public ResponseEntity<ApiResponse<UtilisateurMeResponse>> getProfile() {
+    @Operation(summary = "Récupérer le profil de l'utilisateur connecté", description = "Retourne les informations de l'utilisateur authentifié")
+    public ResponseEntity<ApiResponse<Utilisateur>> getProfile() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             Utilisateur utilisateur = utilisateurService.getUtilisateurByEmail(email);
-
             if (utilisateur != null) {
-                // Créer la réponse avec les informations du compte
-                UtilisateurMeResponse.CompteInfo compteInfo = null;
-                if (utilisateur.getCompte() != null) {
-                    compteInfo = new UtilisateurMeResponse.CompteInfo(
-                            utilisateur.getCompte().getId(),
-                            utilisateur.getCompte().getNumeroCompte(),
-                            utilisateur.getCompte().getSolde(),
-                            utilisateur.getCompte().getDevis(),
-                            utilisateur.getCompte().getActif()
-                    );
-                }
-
-                UtilisateurMeResponse response = new UtilisateurMeResponse(
-                        utilisateur.getId(),
-                        utilisateur.getNom(),
-                        utilisateur.getPrenom(),
-                        utilisateur.getEmail(),
-                        utilisateur.getTelephone(),
-                        utilisateur.getAdresse(),
-                        compteInfo
-                );
-
-                return ResponseEntity.ok(ApiResponse.success(response, "Profil récupéré avec succès"));
+                return ResponseEntity.ok(ApiResponse.success(utilisateur, "Profil récupéré avec succès"));
             }
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
