@@ -3,6 +3,10 @@ package com.flux.transactions.controllers;
 import com.flux.transactions.dtos.TransactionDto;
 import com.flux.transactions.entities.Transaction;
 import com.flux.transactions.services.TransactionService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +15,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/transactions")
+@Tag(name = "Transactions", description = "Gestion des transactions (nécessite authentification JWT)")
+@SecurityRequirement(name = "bearerAuth")
 public class TransactionController {
 
     @Autowired

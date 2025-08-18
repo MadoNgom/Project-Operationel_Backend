@@ -21,6 +21,7 @@ public class Utilisateur {
     private String telephone;
 
     private String adresse;
+    private String password;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "utilisateur")
     private Compte compte;

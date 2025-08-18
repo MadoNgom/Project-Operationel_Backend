@@ -2,9 +2,10 @@ package com.flux.transactions.repositories;
 
 import com.flux.transactions.entities.Compte;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
-@SuppressWarnings("ALL")
 public interface CompteRepository extends JpaRepository<Compte, Long> {
-    Compte findByNumeroCompte(String numeroCompte);
+    Optional<Compte> findByNumeroCompte(String numeroCompte);
+    Optional<Compte> findByUtilisateurId(Long utilisateurId);
 }
 

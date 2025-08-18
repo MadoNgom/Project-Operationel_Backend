@@ -2,12 +2,18 @@ package com.flux.transactions.controllers;
 
 import com.flux.transactions.entities.Historique;
 import com.flux.transactions.services.HistoriqueService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/historiques")
+@Tag(name = "Historiques", description = "Gestion des historiques (nécessite authentification JWT)")
+@SecurityRequirement(name = "bearerAuth")
 public class HistoriqueController {
 
     private final HistoriqueService historiqueService;
