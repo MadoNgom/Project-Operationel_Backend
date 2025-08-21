@@ -19,16 +19,16 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/register")
-    @Operation(summary = "Inscription d'un nouvel utilisateur", description = "Crée un nouveau compte utilisateur avec un compte bancaire et retourne un token JWT")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody RegisterRequest request) {
-        try {
-            AuthResponse response = authService.register(request);
-            return ResponseEntity.ok(ApiResponse.success(response, "Inscription réussie ! Votre compte a été créé avec succès."));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
-    }
+//    @PostMapping("/register")
+//    @Operation(summary = "Inscription d'un nouvel utilisateur", description = "Crée un nouveau compte utilisateur avec un compte bancaire et retourne un token JWT")
+//    public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody RegisterRequest request) {
+//        try {
+//            AuthResponse response = authService.register(request);
+//            return ResponseEntity.ok(ApiResponse.success(response, "Inscription réussie ! Votre compte a été créé avec succès."));
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+//        }
+//    }
 
     @PostMapping("/login")
     @Operation(summary = "Connexion utilisateur", description = "Authentifie un utilisateur et retourne un token JWT")

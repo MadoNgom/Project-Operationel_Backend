@@ -1,6 +1,7 @@
 package com.flux.transactions.services;
 
 import com.flux.transactions.dtos.CompteDto;
+import com.flux.transactions.dtos.UtilisateurDto;
 import com.flux.transactions.dtos.UtilisateurProfileDto;
 import com.flux.transactions.entities.Compte;
 import com.flux.transactions.entities.Utilisateur;
@@ -22,12 +23,14 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     public Utilisateur createUtilisateur(Utilisateur utilisateur) {
         // Vérifier si le téléphone existe déjà
         // if (utilisateur.getTelephone() != null) {
-        //     Utilisateur existant = utilisateurRepository.findByTelephone(utilisateur.getTelephone());
-        //     if (existant != null) {
-        //         throw new DuplicateResourceException(
-        //                 "Un utilisateur avec le numéro de téléphone '" + utilisateur.getTelephone() + "' existe déjà."
-        //         );
-        //     }
+        // Utilisateur existant =
+        // utilisateurRepository.findByTelephone(utilisateur.getTelephone());
+        // if (existant != null) {
+        // throw new DuplicateResourceException(
+        // "Un utilisateur avec le numéro de téléphone '" + utilisateur.getTelephone() +
+        // "' existe déjà."
+        // );
+        // }
         // }
 
         // // Générer un numéro de compte à 4 chiffres
@@ -74,6 +77,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     /**
      * Récupère le profil complet d'un utilisateur par son email
+     *
      * @param email L'email de l'utilisateur
      * @return Le DTO du profil utilisateur avec les informations du compte
      */
@@ -84,6 +88,10 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             return null;
         }
 
+        return convertUtilisateurToProfileDto(utilisateur);
+    }
+
+    public UtilisateurProfileDto convertUtilisateurToProfileDto(Utilisateur utilisateur) {
         // Créer le DTO du compte
         CompteDto compteDto = null;
         if (utilisateur.getCompte() != null) {
@@ -93,8 +101,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                     compte.getNumeroCompte(),
                     compte.getSolde(),
                     compte.getDevis(),
-                    compte.getActif()
-            );
+                    compte.getActif());
         }
 
         // Créer et retourner le DTO du profil utilisateur
@@ -105,7 +112,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 utilisateur.getEmail(),
                 utilisateur.getTelephone(),
                 utilisateur.getAdresse(),
-                compteDto
-        );
+                compteDto);
     }
 }

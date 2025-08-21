@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Data
 public class Compte {
@@ -24,6 +26,7 @@ public class Compte {
 
     @OneToOne
     @JoinColumn(name = "utilisateur_id", referencedColumnName = "id")
+    @JsonIgnore
     private Utilisateur utilisateur;
 
     @OneToMany(mappedBy = "expediteur")
