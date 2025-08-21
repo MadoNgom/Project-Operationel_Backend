@@ -1,3 +1,5 @@
+package com.flux.transactions.config;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -12,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Applique les règles à tous les endpoints
-                        .allowedOrigins("http://localhost:3000") // Spécifie les origines autorisées (votre front-end)
+                        .allowedOrigins("http://localhost:4200") // Spécifie les origines autorisées (votre front-end)
                         .allowedMethods("GET", "POST", "PUT", "DELETE") // Méthodes HTTP autorisées
                         .allowedHeaders("*") // En-têtes autorisés
                         .allowCredentials(true); // Autorise les cookies et les informations d'identification
