@@ -14,10 +14,11 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Applique les règles à tous les endpoints
-                        .allowedOrigins("http://localhost:4200") // Spécifie les origines autorisées (votre front-end)
-                        .allowedMethods("GET", "POST", "PUT", "DELETE") // Méthodes HTTP autorisées
+                        .allowedOriginPatterns("*") // Autorise toutes les origines
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Méthodes HTTP autorisées
                         .allowedHeaders("*") // En-têtes autorisés
-                        .allowCredentials(true); // Autorise les cookies et les informations d'identification
+                        .allowCredentials(true) // Autorise les cookies et les informations d'identification
+                        .maxAge(3600); // Cache les résultats preflight pendant 1 heure
             }
         };
     }
