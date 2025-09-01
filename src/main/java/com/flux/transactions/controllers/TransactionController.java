@@ -2,8 +2,10 @@ package com.flux.transactions.controllers;
 
 import com.flux.transactions.dtos.TransactionDto;
 import com.flux.transactions.dtos.ApiResponse;
+import com.flux.transactions.dtos.UserDto;
 import com.flux.transactions.entities.Compte;
 import com.flux.transactions.entities.Transaction;
+import com.flux.transactions.entities.Utilisateur;
 import com.flux.transactions.services.TransactionService;
 import com.flux.transactions.services.UtilisateurService;
 import com.flux.transactions.services.CompteService;
@@ -36,7 +38,7 @@ public class TransactionController {
     @Autowired
     private CompteService compteService;
 
-    // 🔁 Convertir une entité Transaction en DTO
+        // 🔁 Convertir une entité Transaction en DTO
     private TransactionDto convertToDto(Transaction transaction) {
         TransactionDto dto = new TransactionDto();
         dto.setId(transaction.getId());
@@ -44,7 +46,7 @@ public class TransactionController {
         dto.setDateTransaction(transaction.getDateTransaction());
         dto.setTypeTransaction(transaction.getTypeTransaction());
 
-        // Déterminer quel userId afficher selon le type de transaction
+        // Déterminer quel userId afficher et récupérer les infos de l'utilisateur
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUserEmail = authentication.getName();
         Long currentUserId = utilisateurService.getUtilisateurByEmail(currentUserEmail).getId();
@@ -57,19 +59,35 @@ public class TransactionController {
                 // Si l'utilisateur connecté est l'expéditeur, afficher le destinataire
                 if (currentUserId.equals(expediteurUserId)) {
                     dto.setUserId(destinataireUserId);
+                    dto.setUser(convertToUserDto(transaction.getDestinataire().getUtilisateur()));
                 } else {
                     // Si l'utilisateur connecté est le destinataire, afficher l'expéditeur
                     dto.setUserId(expediteurUserId);
+                    dto.setUser(convertToUserDto(transaction.getExpediteur().getUtilisateur()));
                 }
             } else {
                 // Transaction avec seulement un expéditeur (dépôt/retrait)
                 dto.setUserId(expediteurUserId);
+                dto.setUser(convertToUserDto(transaction.getExpediteur().getUtilisateur()));
             }
         } else if (transaction.getDestinataire() != null && transaction.getDestinataire().getUtilisateur() != null) {
             dto.setUserId(transaction.getDestinataire().getUtilisateur().getId());
+            dto.setUser(convertToUserDto(transaction.getDestinataire().getUtilisateur()));
         }
 
         return dto;
+    }
+
+    // 🔁 Convertir une entité Utilisateur en UserDto
+    private UserDto convertToUserDto(Utilisateur utilisateur) {
+        UserDto userDto = new UserDto();
+        userDto.setId(utilisateur.getId());
+        userDto.setNom(utilisateur.getNom());
+        userDto.setPrenom(utilisateur.getPrenom());
+        userDto.setEmail(utilisateur.getEmail());
+        userDto.setTelephone(utilisateur.getTelephone());
+        userDto.setAdresse(utilisateur.getAdresse());
+        return userDto;
     }
 
     // 🔁 Convertir un DTO en entité Transaction (pour POST)
