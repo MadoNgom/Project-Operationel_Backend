@@ -2,6 +2,7 @@ package com.flux.transactions.controllers;
 
 import com.flux.transactions.entities.Historique;
 import com.flux.transactions.services.HistoriqueService;
+import com.flux.transactions.dtos.ApiResponse;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,23 +24,31 @@ public class HistoriqueController {
     }
 
     @PostMapping
-    public Historique create(@RequestBody Historique historique) {
-        return historiqueService.createHistorique(historique);
+    public ApiResponse<Historique> create(@RequestBody Historique historique) {
+        Historique created = historiqueService.createHistorique(historique);
+        return ApiResponse.success(created, "Historique créé avec succès");
     }
 
     @GetMapping("/{id}")
-    public Historique getById(@PathVariable Long id) {
-        return historiqueService.getHistoriqueById(id);
+    public ApiResponse<Historique> getById(@PathVariable Long id) {
+        Historique historique = historiqueService.getHistoriqueById(id);
+        if (historique != null) {
+            return ApiResponse.success(historique, "Historique récupéré avec succès");
+        } else {
+            return ApiResponse.error("Historique non trouvé");
+        }
     }
 
     @GetMapping
-    public List<Historique> getAll() {
-        return historiqueService.getAllHistoriques();
+    public ApiResponse<List<Historique>> getAll() {
+        List<Historique> historiques = historiqueService.getAllHistoriques();
+        return ApiResponse.success(historiques, "Historiques récupérés avec succès");
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ApiResponse<String> delete(@PathVariable Long id) {
         historiqueService.deleteHistorique(id);
+        return ApiResponse.success("Historique supprimé avec succès");
     }
 }
 

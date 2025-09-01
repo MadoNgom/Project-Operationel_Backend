@@ -2,6 +2,7 @@ package com.flux.transactions.controllers;
 
 import com.flux.transactions.entities.Notification;
 import com.flux.transactions.services.NotificationService;
+import com.flux.transactions.dtos.ApiResponse;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,22 +24,30 @@ public class NotificationController {
     }
 
     @PostMapping
-    public Notification create(@RequestBody Notification notification) {
-        return notificationService.createNotification(notification);
+    public ApiResponse<Notification> create(@RequestBody Notification notification) {
+        Notification created = notificationService.createNotification(notification);
+        return ApiResponse.success(created, "Notification créée avec succès");
     }
 
     @GetMapping("/{id}")
-    public Notification getById(@PathVariable Long id) {
-        return notificationService.getNotificationById(id);
+    public ApiResponse<Notification> getById(@PathVariable Long id) {
+        Notification notification = notificationService.getNotificationById(id);
+        if (notification != null) {
+            return ApiResponse.success(notification, "Notification récupérée avec succès");
+        } else {
+            return ApiResponse.error("Notification non trouvée");
+        }
     }
 
     @GetMapping
-    public List<Notification> getAll() {
-        return notificationService.getAllNotifications();
+    public ApiResponse<List<Notification>> getAll() {
+        List<Notification> notifications = notificationService.getAllNotifications();
+        return ApiResponse.success(notifications, "Notifications récupérées avec succès");
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ApiResponse<String> delete(@PathVariable Long id) {
         notificationService.deleteNotification(id);
+        return ApiResponse.success("Notification supprimée avec succès");
     }
 }

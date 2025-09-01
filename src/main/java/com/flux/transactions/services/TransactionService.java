@@ -8,5 +8,7 @@ public interface TransactionService {
     Transaction createTransaction(Transaction transaction);
     Transaction getTransactionById(Long id);
     List<Transaction> getAllTransactions();
+    List<Transaction> getAllTransactionsByUserId(Long userId);
+    // List<Transaction> getAllTransactionsByCompteId(Long compteId);
     void deleteTransaction(Long id);
 }

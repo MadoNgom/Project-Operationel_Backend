@@ -51,10 +51,10 @@ public class UtilisateurController {
     }
 
     @PostMapping
-    public UtilisateurDto create(@RequestBody UtilisateurDto dto) {
+    public ApiResponse<UtilisateurDto> create(@RequestBody UtilisateurDto dto) {
         Utilisateur utilisateur = dtoToEntity(dto);
         Utilisateur créé = utilisateurService.createUtilisateur(utilisateur);
-        return entityToDto(créé);
+        return ApiResponse.success(entityToDto(créé), "Utilisateur créé avec succès");
     }
 
     // @GetMapping("/{id}")
@@ -64,11 +64,12 @@ public class UtilisateurController {
     // }
 
     @GetMapping
-    public List<UtilisateurDto> getAll() {
-        return utilisateurService.getAllUtilisateurs()
+    public ApiResponse<List<UtilisateurDto>> getAll() {
+        List<UtilisateurDto> utilisateurs = utilisateurService.getAllUtilisateurs()
                 .stream()
                 .map(this::entityToDto)
                 .collect(Collectors.toList());
+        return ApiResponse.success(utilisateurs, "Liste des utilisateurs récupérée avec succès");
     }
     // public ResponseEntity<ApiResponse<Utilisateur>> create(@RequestBody
     // Utilisateur utilisateur) {

@@ -1,14 +1,22 @@
 package com.flux.transactions.controllers;
 
 import com.flux.transactions.dtos.TransactionDto;
+import com.flux.transactions.dtos.ApiResponse;
+import com.flux.transactions.entities.Compte;
 import com.flux.transactions.entities.Transaction;
 import com.flux.transactions.services.TransactionService;
+import com.flux.transactions.services.UtilisateurService;
+import com.flux.transactions.services.CompteService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +30,12 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
+    @Autowired
+    private UtilisateurService utilisateurService;
+
+    @Autowired
+    private CompteService compteService;
+
     // 🔁 Convertir une entité Transaction en DTO
     private TransactionDto convertToDto(Transaction transaction) {
         TransactionDto dto = new TransactionDto();
@@ -30,11 +44,30 @@ public class TransactionController {
         dto.setDateTransaction(transaction.getDateTransaction());
         dto.setTypeTransaction(transaction.getTypeTransaction());
 
-        if (transaction.getExpediteur() != null)
-            dto.setExpediteurId(transaction.getExpediteur().getId());
+        // Déterminer quel userId afficher selon le type de transaction
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+        Long currentUserId = utilisateurService.getUtilisateurByEmail(currentUserEmail).getId();
 
-        if (transaction.getDestinataire() != null)
-            dto.setDestinataireId(transaction.getDestinataire().getId());
+        if (transaction.getExpediteur() != null && transaction.getExpediteur().getUtilisateur() != null) {
+            Long expediteurUserId = transaction.getExpediteur().getUtilisateur().getId();
+            if (transaction.getDestinataire() != null && transaction.getDestinataire().getUtilisateur() != null) {
+                Long destinataireUserId = transaction.getDestinataire().getUtilisateur().getId();
+
+                // Si l'utilisateur connecté est l'expéditeur, afficher le destinataire
+                if (currentUserId.equals(expediteurUserId)) {
+                    dto.setUserId(destinataireUserId);
+                } else {
+                    // Si l'utilisateur connecté est le destinataire, afficher l'expéditeur
+                    dto.setUserId(expediteurUserId);
+                }
+            } else {
+                // Transaction avec seulement un expéditeur (dépôt/retrait)
+                dto.setUserId(expediteurUserId);
+            }
+        } else if (transaction.getDestinataire() != null && transaction.getDestinataire().getUtilisateur() != null) {
+            dto.setUserId(transaction.getDestinataire().getUtilisateur().getId());
+        }
 
         return dto;
     }
@@ -45,14 +78,45 @@ public class TransactionController {
         transaction.setMontant(dto.getMontant());
         transaction.setTypeTransaction(dto.getTypeTransaction());
 
-        if (dto.getExpediteurId() != null) {
-            transaction.setExpediteur(new com.flux.transactions.entities.Compte());
-            transaction.getExpediteur().setId(dto.getExpediteurId());
-        }
+        // Récupérer l'utilisateur connecté
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+        Long currentUserId = utilisateurService.getUtilisateurByEmail(currentUserEmail).getId();
 
-        if (dto.getDestinataireId() != null) {
-            transaction.setDestinataire(new com.flux.transactions.entities.Compte());
-            transaction.getDestinataire().setId(dto.getDestinataireId());
+        // Récupérer le compte de l'utilisateur connecté
+        Compte currentUserCompte = compteService.getCompteByUtilisateurId(currentUserId);
+
+        // Configurer expéditeur et destinataire selon le type de transaction
+        switch (dto.getTypeTransaction()) {
+            case DEPOT:
+                // L'utilisateur connecté est le destinataire (il reçoit l'argent)
+                transaction.setDestinataire(currentUserCompte);
+                // L'expéditeur est le compte admin ou l'utilisateur spécifié
+                if (dto.getUserId() != null) {
+                    Compte expediteurCompte = compteService.getCompteByUtilisateurId(dto.getUserId());
+                    transaction.setExpediteur(expediteurCompte);
+                }
+                break;
+
+            case RETRAIT:
+                // L'utilisateur connecté est l'expéditeur (il retire l'argent)
+                transaction.setExpediteur(currentUserCompte);
+                // Le destinataire est le compte admin ou l'utilisateur spécifié
+                if (dto.getUserId() != null) {
+                    Compte destinataireCompte = compteService.getCompteByUtilisateurId(dto.getUserId());
+                    transaction.setDestinataire(destinataireCompte);
+                }
+                break;
+
+            case TRANSFERT:
+                // L'utilisateur connecté est l'expéditeur (il envoie l'argent)
+                transaction.setExpediteur(currentUserCompte);
+                // Le destinataire est l'utilisateur spécifié
+                if (dto.getUserId() != null) {
+                    Compte destinataireCompte = compteService.getCompteByUtilisateurId(dto.getUserId());
+                    transaction.setDestinataire(destinataireCompte);
+                }
+                break;
         }
 
         return transaction;
@@ -60,31 +124,50 @@ public class TransactionController {
 
     // ✅ POST : Créer une transaction
     @PostMapping
-    public TransactionDto createTransaction(@RequestBody TransactionDto dto) {
+    public ApiResponse<TransactionDto> createTransaction(@RequestBody TransactionDto dto) {
         Transaction transaction = convertToEntity(dto);
         Transaction savedTransaction = transactionService.createTransaction(transaction);
-        return convertToDto(savedTransaction);
+        return ApiResponse.success(convertToDto(savedTransaction), "Transaction créée avec succès");
     }
 
     // ✅ GET : Récupérer toutes les transactions
     @GetMapping
-    public List<TransactionDto> getAllTransactions() {
-        return transactionService.getAllTransactions()
+    public ApiResponse<List<TransactionDto>> getAllTransactions() {
+        List<TransactionDto> transactions = transactionService.getAllTransactions()
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+        return ApiResponse.success(transactions, "Transactions récupérées avec succès");
+    }
+
+    // ✅ GET : Récupérer toutes les transactions par utilisateur
+    @GetMapping("/user")
+    public ApiResponse<List<TransactionDto>> getAllTransactionsByUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Long userId = utilisateurService.getUtilisateurByEmail(email).getId();
+        List<TransactionDto> transactions = transactionService.getAllTransactionsByUserId(userId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        return ApiResponse.success(transactions, "Transactions de l'utilisateur récupérées avec succès");
     }
 
     // ✅ GET : Récupérer une transaction par ID
     @GetMapping("/{id}")
-    public TransactionDto getTransactionById(@PathVariable Long id) {
+    public ApiResponse<TransactionDto> getTransactionById(@PathVariable Long id) {
         Transaction transaction = transactionService.getTransactionById(id);
-        return transaction != null ? convertToDto(transaction) : null;
+        if (transaction != null) {
+            return ApiResponse.success(convertToDto(transaction), "Transaction récupérée avec succès");
+        } else {
+            return ApiResponse.error("Transaction non trouvée");
+        }
     }
 
     // ✅ DELETE : Supprimer une transaction
     @DeleteMapping("/{id}")
-    public void deleteTransaction(@PathVariable Long id) {
+    public ApiResponse<String> deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
+        return ApiResponse.success("Transaction supprimée avec succès");
     }
 }

@@ -13,6 +13,7 @@ public class TransactionDto {
     private TypeTransaction typeTransaction;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime dateTransaction;
-    private Long expediteurId;
-    private Long destinataireId;
+    // private Long expediteurId;
+    // private Long destinataireId;
+    private Long userId;
 }

@@ -145,5 +145,15 @@ public class TransactionServiceImpl implements TransactionService {
     public void deleteTransaction(Long id) {
         transactionRepository.deleteById(id);
     }
+
+    @Override
+    public List<Transaction> getAllTransactionsByUserId(Long userId) {
+        return transactionRepository.findByExpediteur_Utilisateur_IdOrDestinataire_Utilisateur_Id(userId, userId);
+    }
+
+    // @Override
+    // public List<Transaction> getAllTransactionsByCompteId(Long compteId) {
+    //     return transactionRepository.findByCompteId(compteId);
+    // }
 }
 
