@@ -5,6 +5,7 @@ import com.flux.transactions.dtos.UtilisateurDto;
 import com.flux.transactions.dtos.UtilisateurProfileDto;
 import com.flux.transactions.entities.Compte;
 import com.flux.transactions.entities.Utilisateur;
+import com.flux.transactions.enums.TypeRole;
 // import com.flux.transactions.exceptions.DuplicateResourceException;
 import com.flux.transactions.repositories.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,28 +22,10 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Override
     public Utilisateur createUtilisateur(Utilisateur utilisateur) {
-        // Vérifier si le téléphone existe déjà
-        // if (utilisateur.getTelephone() != null) {
-        // Utilisateur existant =
-        // utilisateurRepository.findByTelephone(utilisateur.getTelephone());
-        // if (existant != null) {
-        // throw new DuplicateResourceException(
-        // "Un utilisateur avec le numéro de téléphone '" + utilisateur.getTelephone() +
-        // "' existe déjà."
-        // );
-        // }
-        // }
-
-        // // Générer un numéro de compte à 4 chiffres
-        // String numeroCompte = String.format("%04d", new Random().nextInt(10000));
-
-        // // Créer et lier le compte automatiquement
-        // Compte compte = new Compte();
-        // compte.setNumeroCompte(numeroCompte);
-        // compte.setSolde(0.0);
-        // compte.setUtilisateur(utilisateur);
-
-        // utilisateur.setCompte(compte);
+        // S'assurer que le rôle par défaut est défini si aucun rôle n'est fourni
+        if (utilisateur.getRole() == null) {
+            utilisateur.setRole(TypeRole.USER);
+        }
 
         // Créer le compte automatiquement via le service dédié
         compteService.createCompteForUtilisateur(utilisateur);
@@ -112,6 +95,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 utilisateur.getEmail(),
                 utilisateur.getTelephone(),
                 utilisateur.getAdresse(),
-                compteDto);
+                compteDto,
+                utilisateur.getRole());
     }
 }

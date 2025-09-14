@@ -87,6 +87,7 @@ public class TransactionController {
         userDto.setEmail(utilisateur.getEmail());
         userDto.setTelephone(utilisateur.getTelephone());
         userDto.setAdresse(utilisateur.getAdresse());
+        userDto.setRole(utilisateur.getRole());
         return userDto;
     }
 

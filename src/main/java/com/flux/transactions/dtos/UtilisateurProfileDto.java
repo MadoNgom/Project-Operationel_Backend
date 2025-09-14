@@ -1,5 +1,6 @@
 package com.flux.transactions.dtos;
 
+import com.flux.transactions.enums.TypeRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,4 +16,5 @@ public class UtilisateurProfileDto {
     private String telephone;
     private String adresse;
     private CompteDto compte;
+    private TypeRole role;
 }
