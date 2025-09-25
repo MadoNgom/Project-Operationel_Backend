@@ -20,7 +20,6 @@ public class ApiResponse<T> {
         this.timestamp = System.currentTimeMillis();
     }
 
-    // Méthodes statiques pour faciliter la création
     public static <T> ApiResponse<T> success(T data, String message) {
         return new ApiResponse<>(data, true, message);
     }

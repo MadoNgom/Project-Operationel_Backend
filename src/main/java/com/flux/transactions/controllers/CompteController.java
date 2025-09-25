@@ -1,8 +1,6 @@
 package com.flux.transactions.controllers;
 
 import com.flux.transactions.dtos.ApiResponse;
-import com.flux.transactions.dtos.ApiResponse;
-import com.flux.transactions.dtos.ApiResponse;
 import com.flux.transactions.entities.Compte;
 import com.flux.transactions.services.CompteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,8 +31,6 @@ public class CompteController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
 
-            // Ici vous devriez récupérer l'utilisateur par email puis son compte
-            // Pour simplifier, on retourne un message d'information
             Map<String, Object> data = new HashMap<>();
             data.put("user", email);
             data.put("info", "Fonctionnalité à implémenter : récupération du compte par email utilisateur");

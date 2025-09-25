@@ -38,7 +38,7 @@ public class TransactionController {
     @Autowired
     private CompteService compteService;
 
-        // 🔁 Convertir une entité Transaction en DTO
+        // Convertir une entité Transaction en DTO
     private TransactionDto convertToDto(Transaction transaction) {
         TransactionDto dto = new TransactionDto();
         dto.setId(transaction.getId());
@@ -78,7 +78,7 @@ public class TransactionController {
         return dto;
     }
 
-    // 🔁 Convertir une entité Utilisateur en UserDto
+    // Convertir une entité Utilisateur en UserDto
     private UserDto convertToUserDto(Utilisateur utilisateur) {
         UserDto userDto = new UserDto();
         userDto.setId(utilisateur.getId());
@@ -91,7 +91,7 @@ public class TransactionController {
         return userDto;
     }
 
-    // 🔁 Convertir un DTO en entité Transaction (pour POST)
+    // Convertir un DTO en entité Transaction (pour POST)
     private Transaction convertToEntity(TransactionDto dto) {
         Transaction transaction = new Transaction();
         transaction.setMontant(dto.getMontant());
@@ -141,7 +141,6 @@ public class TransactionController {
         return transaction;
     }
 
-    // ✅ POST : Créer une transaction
     @PostMapping
     public ApiResponse<TransactionDto> createTransaction(@RequestBody TransactionDto dto) {
         Transaction transaction = convertToEntity(dto);
@@ -149,7 +148,6 @@ public class TransactionController {
         return ApiResponse.success(convertToDto(savedTransaction), "Transaction créée avec succès");
     }
 
-    // ✅ GET : Récupérer toutes les transactions
     @GetMapping
     public ApiResponse<List<TransactionDto>> getAllTransactions() {
         List<TransactionDto> transactions = transactionService.getAllTransactions()
@@ -159,7 +157,6 @@ public class TransactionController {
         return ApiResponse.success(transactions, "Transactions récupérées avec succès");
     }
 
-    // ✅ GET : Récupérer toutes les transactions par utilisateur
     @GetMapping("/user")
     public ApiResponse<List<TransactionDto>> getAllTransactionsByUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -172,7 +169,6 @@ public class TransactionController {
         return ApiResponse.success(transactions, "Transactions de l'utilisateur récupérées avec succès");
     }
 
-    // ✅ GET : Récupérer une transaction par ID
     @GetMapping("/{id}")
     public ApiResponse<TransactionDto> getTransactionById(@PathVariable Long id) {
         Transaction transaction = transactionService.getTransactionById(id);
@@ -183,7 +179,6 @@ public class TransactionController {
         }
     }
 
-    // ✅ DELETE : Supprimer une transaction
     @DeleteMapping("/{id}")
     public ApiResponse<String> deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);

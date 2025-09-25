@@ -1,7 +1,6 @@
 package com.flux.transactions.services;
 
 import com.flux.transactions.dtos.CompteDto;
-import com.flux.transactions.dtos.UtilisateurDto;
 import com.flux.transactions.dtos.UtilisateurProfileDto;
 import com.flux.transactions.entities.Compte;
 import com.flux.transactions.entities.Utilisateur;

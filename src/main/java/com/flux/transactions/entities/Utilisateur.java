@@ -26,7 +26,7 @@ public class Utilisateur {
     private String prenom;
     private String email;
 
-    @Column(unique = true) // contrainte unique
+    @Column(unique = true)
     private String telephone;
 
     private String adresse;

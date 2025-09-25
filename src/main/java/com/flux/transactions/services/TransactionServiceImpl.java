@@ -22,13 +22,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     /**
      * ID du compte "admin" depuis lequel on fait les dépôts/retraits.
-     * Peut être surchargé depuis application.properties avec : transaction.admin.compte.id=1000
+     * Peut être surchargé depuis application.properties avec :
+     * transaction.admin.compte.id=1000
      */
     private final Long adminCompteId;
 
     public TransactionServiceImpl(TransactionRepository transactionRepository,
-                                  CompteRepository compteRepository,
-                                  @Value("${transaction.admin.compte.id:1000}") Long adminCompteId) {
+            CompteRepository compteRepository,
+            @Value("${transaction.admin.compte.id:1000}") Long adminCompteId) {
         this.transactionRepository = transactionRepository;
         this.compteRepository = compteRepository;
         this.adminCompteId = adminCompteId;
@@ -119,7 +120,8 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Montant invalide pour la transaction.");
         }
         if (compte.getSolde() < montant) {
-            throw new InsufficientFundsException("Solde insuffisant sur le compte " + role + " (ID: " + compte.getId() + ").");
+            throw new InsufficientFundsException(
+                    "Solde insuffisant sur le compte " + role + " (ID: " + compte.getId() + ").");
         }
     }
 
@@ -153,7 +155,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     // @Override
     // public List<Transaction> getAllTransactionsByCompteId(Long compteId) {
-    //     return transactionRepository.findByCompteId(compteId);
+    // return transactionRepository.findByCompteId(compteId);
     // }
 }
-
